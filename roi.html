@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property ROI Calculator</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      background: #f2f2f2;
+      color: #2c2c2c;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    h1 {
+      color: #002b5b;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .half {
+      flex: 1 1 48%;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .result {
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      margin-top: 15px;
+      color: #004c99;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    button {
+      margin-top: 15px;
+      padding: 14px;
+      width: 100%;
+      background: #004c99;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.2s ease-in-out;
+    }
+    button:hover {
+      background: #003366;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Property ROI Calculator</h1>
+    <div class="card">
+      <div class="row">
+        <div class="half">
+          <label for="purchasePrice">Purchase Price (₹)</label>
+          <input type="number" id="purchasePrice" placeholder="Enter purchase price">
+        </div>
+        <div class="half">
+          <label for="downPayment">Down Payment (%)</label>
+          <input type="number" id="downPayment" placeholder="Enter down payment percentage">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="half">
+          <label for="loanTerm">Loan Term (years)</label>
+          <input type="number" id="loanTerm" placeholder="Enter loan term">
+        </div>
+        <div class="half">
+          <label for="interestRate">Interest Rate (%)</label>
+          <input type="number" id="interestRate" placeholder="Enter interest rate">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="half">
+          <label for="monthlyRent">Monthly Rent (₹)</label>
+          <input type="number" id="monthlyRent" placeholder="Enter monthly rent">
+        </div>
+        <div class="half">
+          <label for="vacancyRate">Vacancy Rate (%)</label>
+          <input type="number" id="vacancyRate" placeholder="Enter vacancy rate">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="half">
+          <label for="monthlyExpenses">Monthly Expenses (₹)</label>
+          <input type="number" id="monthlyExpenses" placeholder="Enter monthly expenses">
+        </div>
+        <div class="half">
+          <label for="propertyTax">Annual Property Tax (₹)</label>
+          <input type="number" id="propertyTax" placeholder="Enter property tax">
+        </div>
+      </div>
+
+      <button onclick="calculateROI()">Calculate ROI</button>
+    </div>
+
+    <div class="card" id="resultsCard" style="display: none;">
+      <h2>📊 Results</h2>
+      <div class="result" id="cashFlow"></div>
+      <div class="result" id="roi"></div>
+      <div class="result" id="capRate"></div>
+      <div class="result" id="cashOnCash"></div>
+    </div>
+  </div>
+
+  <script>
+    function calculateROI() {
+      const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+      const downPayment = parseFloat(document.getElementById('downPayment').value) / 100;
+      const loanTerm = parseFloat(document.getElementById('loanTerm').value);
+      const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
+      const monthlyRent = parseFloat(document.getElementById('monthlyRent').value);
+      const vacancyRate = parseFloat(document.getElementById('vacancyRate').value) / 100;
+      const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value);
+      const propertyTax = parseFloat(document.getElementById('propertyTax').value);
+
+      if (isNaN(purchasePrice) || isNaN(downPayment) || isNaN(loanTerm) || isNaN(interestRate) ||
+          isNaN(monthlyRent) || isNaN(vacancyRate) || isNaN(monthlyExpenses) || isNaN(propertyTax)) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Calculate loan amount and monthly payment
+      const loanAmount = purchasePrice * (1 - downPayment);
+      const monthlyInterestRate = interestRate / 12;
+      const totalPayments = loanTerm * 12;
+      const monthlyPayment = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalPayments)) /
+                            (Math.pow(1 + monthlyInterestRate, totalPayments) - 1);
+
+      // Calculate effective rent after vacancy
+      const effectiveRent = monthlyRent * (1 - vacancyRate);
+
+      // Calculate net monthly income
+      const monthlyNetIncome = effectiveRent - monthlyPayment - monthlyExpenses - (propertyTax / 12);
+
+      // Calculate metrics
+      const annualNetIncome = monthlyNetIncome * 12;
+      const cashInvested = purchasePrice * downPayment;
+      const roi = (annualNetIncome / cashInvested) * 100;
+      const capRate = (annualNetIncome / purchasePrice) * 100;
+      const cashOnCash = (annualNetIncome / cashInvested) * 100;
+
+      // Display results
+      document.getElementById('resultsCard').style.display = 'block';
+      document.getElementById('cashFlow').innerHTML = `Monthly Cash Flow: ₹${monthlyNetIncome.toFixed(2)}`;
+      document.getElementById('roi').innerHTML = `Return on Investment (ROI): ${roi.toFixed(1)}%`;
+      document.getElementById('capRate').innerHTML = `Capitalization Rate: ${capRate.toFixed(1)}%`;
+      document.getElementById('cashOnCash').innerHTML = `Cash-on-Cash Return: ${cashOnCash.toFixed(1)}%`;
+    }
+  </script>
+</body>
+</html>

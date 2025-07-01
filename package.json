@@ -1,0 +1,24 @@
+{
+  "name": "real-estate-tools",
+  "version": "1.0.0",
+  "description": "A collection of web-based calculators for real estate professionals",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "real estate",
+    "calculator",
+    "land cost",
+    "area calculator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jspdf": "^2.5.1"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
