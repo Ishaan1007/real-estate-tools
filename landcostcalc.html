@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Land Cost Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      background: #f2f2f2;
+      color: #2c2c2c;
+      margin: 0;
+      padding: 20px;
+    }
+    .container { max-width: 900px; margin: auto; }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    h2 { 
+      color: #002b5b;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .half { flex: 1 1 48%; }
+    label { 
+      display: block; 
+      margin-top: 10px; 
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .result {
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      margin-top: 10px;
+      color: #004c99;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    button {
+      margin-top: 15px;
+      padding: 14px;
+      width: 100%;
+      background: #004c99;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.2s ease-in-out;
+    }
+    button:hover {
+      background: #003366;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .optional {
+      color: #888;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  window.jsPDF = window.jspdf.jsPDF; // enables jsPDF to work globally
+</script>
+</head>
+<body>
+  <div class="container">
+  <div class="card">
+    <h2>🏡 Land Cost Calculator</h2>
+    <p>Professional real estate investment calculator</p>
+
+    <!-- Area Mode Selector -->
+    <label for="areaMode">📐 How do you want to enter area?</label>
+    <select id="areaMode" onchange="toggleAreaMode()">
+      <option value="dimensions">Length × Breadth (sq. ft.)</option>
+      <option value="direct">Direct Area (sq. yards)</option>
+    </select>
+
+    <!-- Length × Breadth Inputs -->
+    <div class="row" id="dimensionInputs">
+      <div class="half">
+        <label for="breadth">Breadth (sq. ft.) *</label>
+        <input type="number" id="breadth">
+      </div>
+      <div class="half">
+        <label for="length">Length (sq. ft.) *</label>
+        <input type="number" id="length">
+      </div>
+    </div>
+
+    <!-- Direct Area Input (hidden by default) -->
+    <div id="areaInput" style="display: none;">
+      <label for="area">Area (sq. yards) *</label>
+      <input type="number" id="area">
+    </div>
+
+    <label for="cost">Cost per Sq. Yard (₹) *</label>
+    <input type="number" id="cost">
+
+    <div class="row">
+      <div class="half">
+        <label for="state">State *</label>
+        <select id="state">
+          <option value="">Select State</option>
+          <option value="andhra_pradesh">Andhra Pradesh</option>
+          <option value="arunachal_pradesh">Arunachal Pradesh</option>
+          <option value="assam">Assam</option>
+          <option value="bihar">Bihar</option>
+          <option value="chhattisgarh">Chhattisgarh</option>
+          <option value="goa">Goa</option>
+          <option value="gujarat">Gujarat</option>
+          <option value="haryana">Haryana</option>
+          <option value="himachal_pradesh">Himachal Pradesh</option>
+          <option value="jammu_kashmir">Jammu & Kashmir</option>
+          <option value="jharkhand">Jharkhand</option>
+          <option value="karnataka">Karnataka</option>
+          <option value="kerala">Kerala</option>
+          <option value="madhya_pradesh">Madhya Pradesh</option>
+          <option value="maharashtra">Maharashtra</option>
+          <option value="manipur">Manipur</option>
+          <option value="meghalaya">Meghalaya</option>
+          <option value="mizoram">Mizoram</option>
+          <option value="nagaland">Nagaland</option>
+          <option value="odisha">Odisha</option>
+          <option value="punjab">Punjab</option>
+          <option value="rajasthan">Rajasthan</option>
+          <option value="sikkim">Sikkim</option>
+          <option value="tamil_nadu">Tamil Nadu</option>
+          <option value="telangana">Telangana</option>
+          <option value="tripura">Tripura</option>
+          <option value="uttar_pradesh">Uttar Pradesh</option>
+          <option value="uttarakhand">Uttarakhand</option>
+          <option value="west_bengal">West Bengal</option>
+        </select>
+      </div>
+      <div class="half">
+        <label for="applicant">Applicant Category *</label>
+        <select id="applicant">
+          <option value="">Select Category</option>
+          <option value="M">Male</option>
+          <option value="W">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="wm">Registered Sale Value (₹) *</label>
+    <input type="number" id="wm">
+
+    <!-- ✅ Renamed to Other Charges -->
+    <label for="otherCharges">Other Charges (Writer + Mutation + Court, etc.)</label>
+    <input type="number" id="otherCharges" placeholder="Leave empty for auto estimate">
+
+    <!-- ✅ Stamp duty warning -->
+    <div class="note">ℹ️ Stamp duty & registration are auto-calculated based on state and gender. Do not include them here.</div>
+
+    <button onclick="calculate()">Calculate Investment</button>
+    <button id="exportBtn" onclick="exportPDF()" disabled>📄 Export as PDF</button>
+  </div>
+
+  <div class="card" id="resultsCard" style="display: none;">
+    <h2>📊 Calculation Results</h2>
+    <div class="result" id="areaResult"></div>
+    <div class="result" id="landCost"></div>
+    <div class="result" id="stampDuty"></div>
+    <div class="result" id="otherChargesResult"></div>
+    <div class="result" id="total" style="background: #d1fae5; font-weight: bold;"></div>
+  </div>
+</div>
+  <script>
+  function toggleAreaMode() {
+    const mode = document.getElementById("areaMode").value;
+    document.getElementById("dimensionInputs").style.display = mode === "dimensions" ? "flex" : "none";
+    document.getElementById("areaInput").style.display = mode === "direct" ? "block" : "none";
+  }
+
+  function getDutyRate(state, gender, wm) {
+    if (state === "himachal_pradesh") {
+      if (gender === "M") return wm <= 5000000 ? 6 : 8;
+      else return wm <= 8000000 ? 4 : 8;
+    }
+    if (state === "karnataka") {
+      if (wm <= 2000000) return 2;
+      if (wm <= 4500000) return 3;
+      return 5;
+    }
+    if (state === "uttarakhand") {
+      return gender === "M" ? 7 : 5.75;
+    }
+    const dutyRates = {
+      andhra_pradesh:     { M: 5.5,  W: 5.5 },
+      arunachal_pradesh:  { M: 7,    W: 7 },
+      assam:              { M: 8.25, W: 8.25 },
+      bihar:              { M: 7.7,  W: 7.7 },
+      chhattisgarh:       { M: 9,    W: 8 },
+      goa:                { M: 6,    W: 6 },
+      gujarat:            { M: 5.9,  W: 4.9 },
+      haryana:            { M: 8,    W: 6 },
+      jammu_kashmir:      { M: 5,    W: 5 },
+      jharkhand:          { M: 7,    W: 7 },
+      kerala:             { M: 10,   W: 10 },
+      madhya_pradesh:     { M: 10.5, W: 10.5 },
+      maharashtra:        { M: 7,    W: 6 },
+      manipur:            { M: 10,   W: 10 },
+      meghalaya:          { M: 9.9,  W: 9.9 },
+      mizoram:            { M: 9,    W: 9 },
+      nagaland:           { M: 8.25, W: 8.25 },
+      odisha:             { M: 7,    W: 6 },
+      punjab:             { M: 8,    W: 6 },
+      rajasthan:          { M: 6,    W: 5 },
+      sikkim:             { M: 6,    W: 6 },
+      tamil_nadu:         { M: 11,   W: 11 },
+      telangana:          { M: 5.5,  W: 5.5 },
+      tripura:            { M: 5,    W: 5 },
+      uttar_pradesh:      { M: 8,    W: 7 },
+      west_bengal:        { M: 7,    W: 7 }
+    };
+    return dutyRates[state]?.[gender] || 7;
+  }
+
+  function getOtherCharges(area, state) {
+    if (state === 'punjab') {
+      if (area <= 30) return 10000;
+      if (area <= 60) return 12000;
+      if (area <= 100) return 14000;
+      return 16000;
+    }
+    if (area <= 100) return 14000;
+    if (area <= 200) return 16000;
+    if (area <= 300) return 18000;
+    if (area <= 500) return 20000;
+    return 25000;
+  }
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  function calculate() {
+    const areaMode = document.getElementById('areaMode').value;
+    const breadth = parseFloat(document.getElementById('breadth').value);
+    const length = parseFloat(document.getElementById('length').value);
+    const area = parseFloat(document.getElementById('area').value);
+    const cost = parseFloat(document.getElementById('cost').value);
+    const state = document.getElementById('state').value;
+    const applicant = document.getElementById('applicant').value;
+    const wm = parseFloat(document.getElementById('wm').value);
+    const otherChargesInput = document.getElementById('otherCharges');
+    const otherCharges = otherChargesInput.value ? parseFloat(otherChargesInput.value) : 0;
+
+    if (!cost || !state || !wm) {
+      alert('Please fill in all required fields (Cost per Sq. Yard, State, and Registered Sale Value).');
+      return;
+    }
+
+    let calculatedArea;
+    if (areaMode === 'dimensions') {
+      if (!breadth || !length) {
+        alert('Please enter both breadth and length.');
+        return;
+      }
+      calculatedArea = (breadth * length) / 9; // Convert sq ft to sq yards
+    } else {
+      if (!area) {
+        alert('Please enter the area in sq yards.');
+        return;
+      }
+      calculatedArea = area;
+    }
+
+    const dutyRate = getDutyRate(state, applicant, wm);
+    const stampDuty = (wm * dutyRate) / 100;
+    const otherChargesEstimate = getOtherCharges(calculatedArea, state);
+    const finalOtherCharges = otherCharges || otherChargesEstimate;
+
+    const landCost = calculatedArea * cost;
+    const total = landCost + stampDuty + finalOtherCharges;
+
+    document.getElementById('areaResult').textContent = `Area: ${calculatedArea.toFixed(2)} sq. yards`;
+    document.getElementById('landCost').textContent = `Land Cost: ${formatCurrency(landCost)}`;
+    document.getElementById('stampDuty').textContent = `Stamp Duty: ${formatCurrency(stampDuty)}`;
+    document.getElementById('otherChargesResult').textContent = `Other Charges: ${formatCurrency(finalOtherCharges)}`;
+    document.getElementById('total').textContent = `Total Investment: ${formatCurrency(total)}`;
+
+    document.getElementById('resultsCard').style.display = 'block';
+    document.getElementById('exportBtn').disabled = false;  // Enable export button after successful calculation
+  }
+    
+function exportPDF() {
+  // Check if all required fields are present
+  const requiredFields = [
+    document.getElementById('areaResult').textContent,
+    document.getElementById('landCost').textContent,
+    document.getElementById('stampDuty').textContent,
+    document.getElementById('otherChargesResult').textContent,
+    document.getElementById('total').textContent
+  ];
+
+  if (requiredFields.some(field => !field)) {
+    alert('Please calculate the land cost first before exporting.');
+    return;
+  }
+
+  // Initialize PDF with default settings
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  try {
+    // Set margins and spacing
+    const leftMargin = 20;
+    const topMargin = 20;
+    const lineHeight = 8;
+    const sectionSpacing = 15;
+
+    // Add header with decorative border
+    doc.setFont('times', 'bold');
+    doc.setFontSize(22);
+    // Add logo
+    doc.addImage('https://raw.githubusercontent.com/Ishaan1007/Land-CostCalc./main/land%20cost%20calculator%20image.jpg', 'JPEG', leftMargin, topMargin - 15, 20, 20);
+
+    // Add header
+    doc.setFontSize(22);
+    doc.setTextColor(31, 41, 55);
+    doc.text('Land Cost Estimation Report', leftMargin + 30, topMargin);
+
+    // Add date
+    doc.setFontSize(11);
+    doc.setTextColor(75, 85, 99);
+    doc.text('Generated on: ' + new Date().toLocaleDateString(), leftMargin + 30, topMargin + 12);
+
+    // Add decorative border around content
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(156, 163, 175);
+    doc.rect(leftMargin - 5, topMargin + 15, 180, 240);
+
+    // Add main content with borders
+    const startY = topMargin + 45;
+    
+    // Area Details Section
+    doc.setFontSize(14);
+    doc.setTextColor(31, 41, 55);
+    doc.text('Area Details', leftMargin + 5, startY + 5);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(75, 85, 99);
+    
+    // Add border around area details
+    doc.rect(leftMargin, startY, 150, 30);
+    doc.text('Area: ' + document.getElementById('areaResult').textContent, leftMargin + 10, startY + 15);
+    doc.text('Cost per Sq. Yard: ₹' + document.getElementById('cost').value, leftMargin + 10, startY + 25);
+
+    // Financial Breakdown Section
+    const breakdownStartY = startY + 40 + sectionSpacing;
+    doc.setFontSize(14);
+    doc.setTextColor(31, 41, 55);
+    doc.text('Financial Breakdown', leftMargin + 5, breakdownStartY + 5);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(75, 85, 99);
+    
+    // Add border around financial breakdown
+    doc.rect(leftMargin, breakdownStartY, 150, 50);
+    doc.text('Land Cost: ' + document.getElementById('landCost').textContent, leftMargin + 10, breakdownStartY + 15);
+    doc.text('Stamp Duty: ' + document.getElementById('stampDuty').textContent, leftMargin + 10, breakdownStartY + 25);
+    doc.text('Other Charges: ' + document.getElementById('otherChargesResult').textContent, leftMargin + 10, breakdownStartY + 35);
+
+    // Total Section
+    const totalStartY = breakdownStartY + 60 + sectionSpacing;
+    doc.setFontSize(16);
+    doc.setTextColor(24, 103, 192);
+    doc.text('Total Investment', leftMargin + 5, totalStartY + 5);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(31, 41, 55);
+    
+    // Add special border around total
+    doc.setLineWidth(1);
+    doc.setDrawColor(24, 103, 192);
+    doc.rect(leftMargin, totalStartY, 150, 30);
+    doc.text(document.getElementById('total').textContent, leftMargin + 10, totalStartY + 20);
+
+    // Add footer
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128);
+    
+    // Add footer border
+    doc.setLineWidth(0.3);
+    doc.setDrawColor(156, 163, 175);
+    doc.rect(leftMargin, 270, 150, 15);
+    
+    doc.text('Generated by Land Cost Calculator', leftMargin + 5, 275);
+    doc.text('Page 1 of 1', 160, 275);
+
+    // Save the PDF
+    doc.save('land_cost_estimation.pdf');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('An error occurred while generating the PDF. Please try again.');
+  }
+}
+</script>
+      
+    
+  
