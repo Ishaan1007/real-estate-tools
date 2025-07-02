@@ -56,16 +56,6 @@
       background: #003366;
     }
 
-    canvas {
-      width: 100%;
-      max-width: 500px;
-      height: 500px;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-      border-radius: 6px;
-      display: block;
-    }
-
     .result {
       font-weight: bold;
       font-size: 1.1em;
@@ -92,9 +82,8 @@
       </select>
     </label>
 
-    <button onclick="calculateAndDraw()">Calculate & Draw</button>
+    <button onclick="calculateArea()">Calculate</button>
     <div class="result" id="output"></div>
-    <canvas id="canvas" width="500" height="500"></canvas>
   </main>
 
   <script>
@@ -102,7 +91,7 @@
       return unit === "feet" ? val / 3 : val * 1.09361;
     }
 
-    function calculateAndDraw() {
+    function calculateArea() {
       const a = parseFloat(document.getElementById("a").value);
       const b = parseFloat(document.getElementById("b").value);
       const c = parseFloat(document.getElementById("c").value);
@@ -125,66 +114,9 @@
       output.innerHTML = isNaN(area)
         ? "⚠️ Cannot compute area: invalid side combination."
         : `📐 <strong>Estimated Area:</strong> ${area.toFixed(2)} square yards`;
-
-      drawCenteredQuad([a, b, c, d]);
-    }
-
-    function drawCenteredQuad(sides) {
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const scale = 200 / Math.max(...sides);
-      const angleSteps = [Math.PI / 5, Math.PI / 4, Math.PI / 6];
-      let angle = 0;
-      let curr = { x: 0, y: 0 };
-      const points = [curr];
-
-      for (let i = 0; i < 3; i++) {
-        angle += angleSteps[i];
-        const next = {
-          x: curr.x + Math.cos(angle) * sides[i] * scale,
-          y: curr.y + Math.sin(angle) * sides[i] * scale
-        };
-        points.push(next);
-        curr = next;
-      }
-
-      points.push(points[0]); // close shape
-
-      // Center shape
-      const xs = points.map(p => p.x);
-      const ys = points.map(p => p.y);
-      const offsetX = (canvas.width - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs);
-      const offsetY = (canvas.height - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
-      const shifted = points.map(p => ({
-        x: p.x + offsetX,
-        y: p.y + offsetY
-      }));
-
-      // Draw polygon
-      ctx.beginPath();
-      ctx.moveTo(shifted[0].x, shifted[0].y);
-      for (let i = 1; i < 4; i++) {
-        ctx.lineTo(shifted[i].x, shifted[i].y);
-      }
-      ctx.closePath();
-      ctx.strokeStyle = "#004c99";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Labels
-      ctx.fillStyle = "#2c2c2c";
-      ctx.font = "12px Segoe UI";
-      const labels = ["AB", "BC", "CD", "DA"];
-      for (let i = 0; i < 4; i++) {
-        const p1 = shifted[i];
-        const p2 = shifted[(i + 1) % 4];
-        const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-        ctx.fillText(labels[i], mid.x - 10, mid.y - 5);
-      }
     }
   </script>
 
 </body>
 </html>
+    
