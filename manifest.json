@@ -1,0 +1,15 @@
+{
+  "name": "Land Cost Calculator",
+  "short_name": "LandCalc",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196f3",
+  "icons": [
+    {
+      "src": "https://ik.imagekit.io/rmlbayysp/1751429701450-1000007154_-myCMOMN0x.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
